@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <fstream>
 #include "putils.hpp"
+#include "FilePathUtils.h"
 using namespace std;
 
 namespace putils {
@@ -225,20 +226,12 @@ public:
     void parseCommandLine(int argc,char **argv) throw()
     {
         try {
-//            cerr << "we have " << argc << " arguments "<<endl;
-//            for (int karg=0; karg<argc; ++karg) {
-//                cerr << argv[karg] << " ";
-//            }
-//            cerr << "\n";
             for (int karg=1; karg<argc; ++karg) {
-//                cerr << "processing argument # " << karg << endl;
                 string targ ( argv[karg] );
                 if (targ.size()>2 && targ[0]=='-') {
                     int s=1;
                     if (targ[1]=='-') s=2;
-//                    cerr << "start = " << s;
                     size_t eq_pos = targ.find("=");
-//                    cerr << " equal position " << eq_pos << endl;
                     if (eq_pos==string::npos) {
                         // no equal in options value
                         string key=targ.substr(s,string::npos);
@@ -246,15 +239,11 @@ public:
                         int knext=karg+1;
                         if (knext<argc && argv[knext][0]!='-') {
                             string val(argv[knext]);
-//                            cerr << " no equal with value key = " << key << " val is " << val << endl;
                             setValue(key,val);
                             ++karg;
                         }
                         else {
-//                            cerr << "knext = " << knext << " argc = " << argc << endl;
-//                            if (knext<argc) cerr << " knext arg not val = " << argv[knext] << endl;
                             string val("1");
-//                            cerr << " no equal without value key = " << key << " val 1 " << endl;
                             setValue(key,val);
                         }
                     }
@@ -262,11 +251,9 @@ public:
                         string key=targ.substr(s,(eq_pos-s));
                         string val=targ.substr(eq_pos+1,string::npos);
                         if (val.size())  {
-//                            cerr << "equal with value key = " << key << " val " << val << endl;
                             setValue(key,val);
                         }
                         else {
-//                            cerr << "equal no value key = " << key << " val 1 " << endl;
                             setValue(key,string("1"));
                         }
                     }
@@ -276,7 +263,6 @@ public:
                     string err("expected an -option_name but found value");
                     throw ParseError(err);
                 }
-//                cerr << "karg = " << karg << " argc = " << argc << endl;
             }
         }
         catch (exception& e) {
@@ -290,6 +276,14 @@ public:
     //!
     void parseOptionFile(const string& options_filename) throw()
     {
+        if (!isRegularFile(options_filename)) {
+            cerr << "File with options :" << options_filename << " do not exist or is not a regular file!\n";
+            exit(EXIT_FAILURE);
+        }
+        if (!canRead(options_filename)) {
+            cerr << "File with options :" << options_filename << " cannot be read!\n";
+            exit(EXIT_FAILURE);        
+        }
         try {
             ifstream in;
             in.exceptions(ifstream::badbit);
@@ -303,7 +297,6 @@ public:
                 StringTokenizer tokenizer(sline,delims);
                 vector<string> tokens;
                 tokenizer.splitString(tokens);
-//                for (long m=0; m<ntokens; ++m) cerr << m << " " << tokens[m] << endl;
                 tokenizer.rewind();
                 if (tokenizer.hasTokens()) {
                     string key=tokenizer.nextToken();
