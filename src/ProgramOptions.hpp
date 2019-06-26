@@ -123,6 +123,7 @@ private:
     };
 
     vector<option_t> opts;
+    bool allow_unused_options;
 public:
     typedef vector<option_t>::iterator iterator;
     typedef vector<option_t>::const_iterator const_iterator;
@@ -214,6 +215,10 @@ public:
             return iter->setValue(value);
         }
         catch (exception& e) {
+            if (allow_unused_options) {
+                cerr << "option " << option_name << " not found\n";
+                return;
+            }
             cerr << "ProgramOption::setValue exception " << e.what() << endl;
             printHelp();
         }
