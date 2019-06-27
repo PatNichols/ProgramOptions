@@ -236,6 +236,10 @@ public:
                 if (targ.size()>2 && targ[0]=='-') {
                     int s=1;
                     if (targ[1]=='-') s=2;
+                    string check_help = targ.substr(s,string::npos);
+                    if (check_help.compare(0,4,"help")==0) {  
+                        printHelp();
+                    }
                     size_t eq_pos = targ.find("=");
                     if (eq_pos==string::npos) {
                         // no equal in options value
@@ -435,6 +439,7 @@ public:
     //!
     void printHelp() const
     {
+        std::cerr << "Usage is:\n";
         const_iterator iter=opts.begin();
         const_iterator iend=opts.end();
         for (; iter!=iend; ++iter) {
